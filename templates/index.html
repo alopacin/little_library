@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ context.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-2 row">
+      <h2></h2>
+      </div>
+    <div class="container text-center mb-3">
+        <h1>Strona główna</h1>
+        <a href="/" class="btn btn-secondary" >Strona główna</a>
+    </div>
+
+    <div class="container text-center mt-2 row-cols-2">
+        <div class="container col-sm-6 mt-4 mb-3 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
+            <h4 class="container row">Załóż konto</h4>
+            <form action="/" method="POST">
+                <input class="w-100" type="text" placeholder="Podaj swój login" name="nazwa_kupno" required>
+                <input class="w-100" type="password" placeholder="Podaj hasło" name="cena_kupno" required>
+                <button class="btn btn-secondary" type="submit">Wyślij</button>
+            </form>
+        </div>
+
+        <div class="container col-sm-6 mt-2 mb-3 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
+            <h4 class="container row"></h4>
+            <form action="/" method="POST">
+                <input class="w-100" type="text" placeholder="Wpisz produkt" name="nazwa_sprzedaz" required>
+                <input class="w-100" type="number" placeholder="Podaj cenę sprzedaży" name="cena_sprzedaz" required>
+                <button class="btn btn-secondary" type="submit">Wyślij</button>
+            </form>
+        </div>
+      <div class="container text-center mt-3 mb-3 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
+        <h4 class=" container row"></h4>
+          <form action="/" method="POST">
+            <select class="form-select w-100 border border-dark-subtle" name="operacja" id="inputGroupSelect">
+                <option value="" selected>Wybierz</option>
+                <option value="1">Dodaj do konta</option>
+                <option value="2">Odejmij z konta</option>
+            </select>
+                <input class="w-100" type="number" placeholder="Podaj kwotę" name="kwota">
+                <button class="btn btn-secondary" type="submit">Wyślij</button>
+          </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+  </body>
+
+</html>
+
+
+
+
+
+
+
+
+
+</body>
+</html>
