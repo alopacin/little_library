@@ -9,12 +9,16 @@
     <div class="container text-center mb-3 mt-4">
         <h1>Strona główna</h1>
         <a href="/" class="btn btn-secondary" >Strona główna</a>
+        <a href="/ksiazki" class="btn btn-secondary" >Książki</a>
     </div>
 
     <div class="container-fluid text-center mx-auto row gx-4">
         <div class="container col-5 mt-4 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
             <h4 class="container">Załóż konto</h4>
             <form action="/" method="POST">
+                {% if context.message %}
+                <p style="color: red"> {{ context.message }} </p>
+                {% endif %}
                 <input class="w-100" type="text" placeholder="Podaj swój login" name="nowe_konto_login" required>
                 <input class="w-100" type="password" placeholder="Podaj hasło" name="nowe_konto_haslo" required>
                 <button class="btn btn-secondary" type="submit">Wyślij</button>
@@ -24,23 +28,15 @@
         <div class="container col-5 mt-4 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primnary-subtle rounded-3">
             <h4 class="container row-2">Zaloguj się</h4>
             <form action="/" method="POST">
+                {% if context.message %}
+                <p style="color: red"> {{ context.message }} </p>
+                {% endif %}
                 <input class="w-100" type="text" placeholder="Podaj swój login" name="logowanie_login" required>
                 <input class="w-100" type="password" placeholder="Wpisz hasło" name="logowanie_haslo" required>
                 <button class="btn btn-secondary" type="submit">Wyślij</button>
+
             </form>
         </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
-  </body>
-
-</html>
-
-
-
-
-
-
-
-
-
 </body>
 </html>

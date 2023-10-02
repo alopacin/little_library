@@ -9,14 +9,14 @@ db = SQLAlchemy(app)
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, primary_key=True)
+    name = db.Column(db.String, nullable=False)
 
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    login = db.Column(db.String, unique=True, primary_key=True)
+    login = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    books_borrowed = db.Column(db.Integer)
+    books_borrowed = db.Column(db.Integer, nullable=True)
 
 
 with app.app_context():
@@ -26,6 +26,7 @@ with app.app_context():
 @app.route('/', methods=['GET', 'POST'])
 def home():
     title = 'Strona główna'
+    message = None
 
     if request.method == 'POST':
         new_user = request.form.get('nowe_konto_login')
@@ -34,18 +35,44 @@ def home():
         check_user_password = request.form.get('logowanie_haslo')
 
         if new_user and new_user_password:
-            hash_pass = generate_password_hash(new_user_password, method='sha256')
-            user = User(login=new_user, password=hash_pass)
-            db.session.add(user)
-            db.session.commit()
-            redirect(url_for('konto'))
+            exist_user = db.session.query(User).filter_by(login=new_user)
+            if exist_user:
+                message = 'Taki login jest już zajęty'
+            else:
+                hash_pass = generate_password_hash(new_user_password, method='pbkdf2:sha256')
+                user = User(login=new_user, password=hash_pass)
+                db.session.add(user)
+                db.session.commit()
+                return redirect(url_for('konto'))
 
         if check_user_name and check_user_password:
             user = db.session.query(User).filter_by(login=check_user_name).first()
             if user and check_password_hash(user.password, check_user_password):
-                redirect(url_for('konto'))
+                return redirect(url_for('konto'))
+            else:
+                message = 'Błąd logowania'
 
     context = {
-    'title' : title,
+        'title': title,
+        'message': message
                    }
     return render_template('index.html', context=context)
+
+
+@app.route('/ksiazki')
+def examples():
+    title = 'Książki'
+    context = {
+        'title': title,
+    }
+    return render_template('ksiazki.html', context=context)
+
+
+@app.route('/konto', methods=['GET', 'POST'])
+def account():
+    title = 'Konto'
+    context = {
+        'title': title,
+    }
+    return render_template('konto.html', context=context)
+
