@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from functions import load_quotes
+import random
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
@@ -26,35 +28,39 @@ with app.app_context():
 @app.route('/', methods=['GET', 'POST'])
 def home():
     title = 'Strona główna'
-    message = None
+    message1 = None
+    message2 = None
+    quotes = load_quotes('quotes.txt')
+    quote = random.choice(quotes)
 
-    if request.method == 'POST':
-        new_user = request.form.get('nowe_konto_login')
-        new_user_password = request.form.get('nowe_konto_haslo')
-        check_user_name = request.form.get('logowanie_login')
-        check_user_password = request.form.get('logowanie_haslo')
+    new_user = request.form.get('nowe_konto_login')
+    new_user_password = request.form.get('nowe_konto_haslo')
+    check_user_name = request.form.get('logowanie_login')
+    check_user_password = request.form.get('logowanie_haslo')
 
-        if new_user and new_user_password:
-            exist_user = db.session.query(User).filter_by(login=new_user)
-            if exist_user:
-                message = 'Taki login jest już zajęty'
-            else:
-                hash_pass = generate_password_hash(new_user_password, method='pbkdf2:sha256')
-                user = User(login=new_user, password=hash_pass)
-                db.session.add(user)
-                db.session.commit()
-                return redirect(url_for('konto'))
+    if new_user and new_user_password:
+        exist_user = db.session.query(User).filter_by(login=new_user)
+        if exist_user:
+            message1 = 'Taki login jest już zajęty'
+        else:
+            hash_pass = generate_password_hash(new_user_password, method='pbkdf2:sha256')
+            user = User(login=new_user, password=hash_pass)
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('/konto'))
 
-        if check_user_name and check_user_password:
-            user = db.session.query(User).filter_by(login=check_user_name).first()
-            if user and check_password_hash(user.password, check_user_password):
-                return redirect(url_for('konto'))
-            else:
-                message = 'Błąd logowania'
+    if check_user_name and check_user_password:
+        user = db.session.query(User).filter_by(login=check_user_name).first()
+        if user and check_password_hash(user.password, check_user_password):
+            return redirect(url_for('/konto'))
+        else:
+            message2 = 'Błąd logowania'
 
     context = {
         'title': title,
-        'message': message
+        'message1': message1,
+        'message2': message2,
+        'quote': quote,
                    }
     return render_template('index.html', context=context)
 
