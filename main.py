@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from functions import load_quotes, fetch_books
+from functions import load_quotes, fetch_books, save_books_to_db
 import random
+from sqlalchemy.sql.expression import func
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
@@ -25,14 +26,10 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
+if Book.query.count() == 0:
+    books = fetch_books()
+    save_books_to_db(books, Book, db)
 
- def save_books_to_db(books):
-    for book_data in books:
-        book = Book(title=book_data['results'][0]['title'],author=book_data['authors'][0]['name'])
-        db.session.add(book)
-        db.session.commit()
-
-    save_books_to_db(books)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -79,8 +76,10 @@ def home():
 @app.route('/ksiazki')
 def examples():
     title = 'Książki'
+    book = Book.query.order_by(func.random()).first()
     context = {
         'title': title,
+        'book': book,
     }
     return render_template('ksiazki.html', context=context)
 

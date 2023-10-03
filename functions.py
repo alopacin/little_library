@@ -7,17 +7,32 @@ def load_quotes(f):
 
 
 def fetch_books(limit=1000):
-    url = "https://gutendex.com/books"
+    base_url = "https://gutendex.com/books"
     params = {
         'random': 'true',
         'limit': limit
     }
-    response = requests.get(url, params=params)
+    response = requests.get(base_url, params=params)
     if response.status_code == 200:
-        return response.json()
+        books = response.json()['results']
+        processed_books = []
+        for book in books:
+            title = book.get('title')
+            author = book['authors'][0]['name']
+            processed_books.append({'title': title, 'author': author})
+        return processed_books
     else:
         print(f"Error {response.status_code}: {response.text}")
         return []
+
+
+def save_books_to_db(books, book_model, db):
+    for book in books:
+        book = book_model(title=book['title'], author=book['author'])
+        db.session.add(book)
+    db.session.commit()
+
+
 
 
 
