@@ -7,14 +7,15 @@
 </head>
 <body>
 <div class="container text-center mb-3 mt-4">
-        <h1>Strona główna</h1>
+        <h1>Przykładowe książki</h1>
         <a href="/" class="btn btn-secondary" >Strona główna</a>
-        <a href="/ksiazki" class="btn btn-secondary" >Książki</a>
+        <a href="/ksiazki" class="btn btn-secondary" >Przykładowe książki</a>
     </div>
-<h2 class="container">Książki jakie możesz wypożyczyć:</h2>
-  <h1>{{ title }}</h1>
-    <h2>Losowa książka:</h2>
-    <h3>{{ book.title }}</h3>
-    <p>Author: {{ book.author }}</p>
+<div class="container mt-5">
+<h4 class="container mb-3 display-6">Przykładowe książki jakie możesz wypożyczyć:</h4>
+    {% for book in context.show_books %}
+    <h5 class="container mt-4 fs-4 text-body-secondary u">{{ book }}</h5>
+{% endfor %}
+</div>
 </body>
 </html>

@@ -15,6 +15,9 @@ class Book(db.Model):
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String, nullable=False)
 
+    def __str__(self):
+        return f'{self.title} - {self.author}'
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,10 +28,9 @@ class User(db.Model):
 
 with app.app_context():
     db.create_all()
-
-if Book.query.count() == 0:
-    books = fetch_books()
-    save_books_to_db(books, Book, db)
+    if Book.query.count() < 500:
+        books = fetch_books()
+        save_books_to_db(books, Book, db)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -76,10 +78,10 @@ def home():
 @app.route('/ksiazki')
 def examples():
     title = 'Książki'
-    book = Book.query.order_by(func.random()).first()
+    show_books = Book.query.order_by(func.random()).limit(3).all()
     context = {
         'title': title,
-        'book': book,
+        'show_books': show_books,
     }
     return render_template('ksiazki.html', context=context)
 
