@@ -15,7 +15,7 @@
 <h3 class="container mb-3 col-5 mt-4 ">Zarejestruj się i wypożyczaj! Zobacz przykłady książek jakie mamy w naszej wypożyczalni:</h3>
     {% for book in context.show_books %}
     <h5 class="container mt-4 fs-4 text-body-secondary">{{ book }}</h5>
-{% endfor %}
+    {% endfor %}
     <form action="/ksiazki">
         <button class="text-center fs-5 btn btn-secondary mb-2 mt-2" type="submit">Zobacz kolejne propozycje</button>
     </form>

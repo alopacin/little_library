@@ -89,8 +89,10 @@ def examples():
 @app.route('/konto', methods=['GET', 'POST'])
 def account():
     title = 'Konto'
+    all_books = Book.query.all()
     context = {
         'title': title,
+        'all_books': all_books
     }
 
     return render_template('konto.html', context=context)

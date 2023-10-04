@@ -11,7 +11,25 @@
         <a href="/" class="btn btn-secondary" >Strona główna</a>
         <a href="/ksiazki" class="btn btn-secondary" >Książki</a>
     </div>
-<h2 class="container">Witaj na swoim koncie użytkownika</h2>
-
+<h4 class="container mb-4 mt-4">Witaj na swoim koncie użytkownika. Masz wypożyczone następujące pozycje:</h4>
+<h5 class="container text-center mt-5">Tytuły, które możesz wypożyczyć:</h5>
+<table class="container table table-striped ">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Tytuł</th>
+      <th scope="col">Autor</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for book in context.all_books %}
+    <tr>
+        <th scope="row">{{ book.id }}</th>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
 </body>
 </html>
