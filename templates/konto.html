@@ -9,10 +9,15 @@
 <div class="container text-center mb-3 mt-4">
         <h1>Strona główna</h1>
         <a href="/" class="btn btn-secondary" >Strona główna</a>
-        <a href="/ksiazki" class="btn btn-secondary" >Książki</a>
         <a href="/logout" class="btn btn-danger">Wyloguj</a>
     </div>
 <h4 class="container mb-4 mt-4">Witaj na swoim koncie użytkownika. Masz wypożyczone następujące pozycje:</h4>
+{% for book in context.user_books %}
+    <div class="container">
+        <h6>{{ book.title }}</h6>
+        <p>{{ book.author }}</p>
+    </div>
+{% endfor %}
 <h5 class="container text-center mt-5">Tytuły, które możesz wypożyczyć:</h5>
 <table class="container table table-striped ">
   <thead>

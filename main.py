@@ -100,9 +100,12 @@ def examples():
 def account():
     title = 'Konto'
     all_books = Book.query.filter_by(user_id=None).all()
+    user_id = session.get('user_id')
+    user_books = Book.query.filter_by(user_id=user_id).all()
     context = {
         'title': title,
-        'all_books': all_books
+        'all_books': all_books,
+        'user_books': user_books,
     }
     return render_template('konto.html', context=context)
 
