@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functions import load_quotes, fetch_books, save_books_to_db
@@ -8,12 +8,14 @@ from sqlalchemy.sql.expression import func
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
 db = SQLAlchemy(app)
+app.config['SECRET_KEY'] = 'admin'
 
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
     def __str__(self):
         return f'{self.title} - {self.author}'
@@ -23,14 +25,21 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    books_borrowed = db.Column(db.Integer, nullable=True)
+    books_borrowed = db.relationship('Book', backref='borrower', lazy=True)
 
 
 with app.app_context():
     db.create_all()
-    if Book.query.count() < 500:
+    if Book.query.count() < 250:
         books = fetch_books()
         save_books_to_db(books, Book, db)
+
+
+def get_current_user():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return None
+    return User.query.get(user_id)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -61,6 +70,7 @@ def home():
     if check_user_name and check_user_password:
         user = db.session.query(User).filter_by(login=check_user_name).first()
         if user and check_password_hash(user.password, check_user_password):
+            session['user_id'] = user.id
             return redirect(url_for('account'))
         else:
             message2 = 'Błędny login lub hasło'
@@ -89,11 +99,31 @@ def examples():
 @app.route('/konto', methods=['GET', 'POST'])
 def account():
     title = 'Konto'
-    all_books = Book.query.all()
+    all_books = Book.query.filter_by(user_id=None).all()
     context = {
         'title': title,
         'all_books': all_books
     }
-
     return render_template('konto.html', context=context)
+
+
+@app.route('/borrow/<int:book_id>', methods=['GET', 'POST'])
+def borrow_book(book_id):
+    current_user = get_current_user()
+    book = Book.query.get(book_id)
+    if book and not book.user_id:
+        current_user = get_current_user()
+        book.user_id = current_user.id
+        db.session.commit()
+        return redirect(url_for('account'))
+    else:
+        return "Książka jest już wypożyczona", 400
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('Poprawnie wylogowano')
+    return redirect(url_for('home'))
+
 

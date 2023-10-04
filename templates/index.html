@@ -12,6 +12,15 @@
         <a href="/" class="btn btn-secondary" >Strona główna</a>
         <a href="/ksiazki" class="btn btn-secondary" >Przykładowe książki</a>
     </div>
+{% with messages = get_flashed_messages() %}
+
+        <div class="flash-messages">
+            {% for message in messages %}
+                <div class=" container alert alert-info">{{ message }}</div>
+            {% endfor %}
+        </div>
+
+{% endwith %}
     <div class="container text-center mx-auto mt-5">
          {% if context.message1 %}
                 <p style="color: red" class="display-6"> {{ context.message1 }} </p>

@@ -10,6 +10,7 @@
         <h1>Strona główna</h1>
         <a href="/" class="btn btn-secondary" >Strona główna</a>
         <a href="/ksiazki" class="btn btn-secondary" >Książki</a>
+        <a href="/logout" class="btn btn-danger">Wyloguj</a>
     </div>
 <h4 class="container mb-4 mt-4">Witaj na swoim koncie użytkownika. Masz wypożyczone następujące pozycje:</h4>
 <h5 class="container text-center mt-5">Tytuły, które możesz wypożyczyć:</h5>
@@ -19,6 +20,7 @@
       <th scope="col">#</th>
       <th scope="col">Tytuł</th>
       <th scope="col">Autor</th>
+        <th scope="col">Akcja</th>
     </tr>
   </thead>
   <tbody>
@@ -27,6 +29,10 @@
         <th scope="row">{{ book.id }}</th>
         <td>{{ book.title }}</td>
         <td>{{ book.author }}</td>
+        <td><form action="{{ url_for('borrow_book', book_id=book.id) }}" method="POST">
+            <button class="btn btn-success" type="submit">Wypożycz</button>
+        </form>
+        </td>
     </tr>
 {% endfor %}
   </tbody>

@@ -34,5 +34,3 @@ def save_books_to_db(books, book_model, db):
 
 
 
-
-
