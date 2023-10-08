@@ -30,6 +30,9 @@ class User(db.Model):
     password = db.Column(db.String, nullable=False)
     books_borrowed = db.relationship('Book', backref='borrower', lazy=True)
 
+    def __repr__(self):
+        return self.login
+
 
 with app.app_context():
     db.create_all()
@@ -104,11 +107,13 @@ def account():
     title = 'Konto'
     all_books = Book.query.filter_by(user_id=None).all()
     user_id = session.get('user_id')
+    user_name = User.query.get(user_id)
     user_books = Book.query.filter_by(user_id=user_id).all()
     context = {
         'title': title,
         'all_books': all_books,
         'user_books': user_books,
+        'user': user_name
     }
     return render_template('konto.html', context=context)
 
@@ -123,7 +128,7 @@ def borrow(book_id):
     if book and not book.user_id:
         book.user_id = user_id
         book.borrowed_at = datetime.now()
-        book.return_by = datetime.now() + timedelta(hours=1)
+        book.return_by =  datetime.now() + timedelta(hours=1)
         db.session.commit()
     return redirect(url_for('account'))
 

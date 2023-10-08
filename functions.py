@@ -6,7 +6,7 @@ def load_quotes(f):
         return [line.strip() for line in file if line.strip()]
 
 
-def fetch_books(limit=250):
+def fetch_books(limit=100):
     base_url = "https://gutendex.com/books"
     params = {
         'random': 'true',

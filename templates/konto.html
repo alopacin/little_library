@@ -11,15 +11,15 @@
         <a href="/" class="btn btn-secondary" >Strona główna</a>
         <a href="/logout" class="btn btn-danger">Wyloguj</a>
     </div>
-<h4 class="container mb-4 mt-4">Witaj na swoim koncie . Masz wypożyczone następujące pozycje:</h4>
+<h3 class="container mb-4 mt-3 p-1">Witaj na swoim koncie {{ context.user }} ! Masz wypożyczone następujące pozycje :</h3>
 {% for book in context.user_books %}
-    <div class="container ">
-        <h6>{{ book.title }}</h6>
+    <div class="container p-1">
+        <h4>{{ book.title }}</h4>
         <p>{{ book.author }}</p>
-        <p>Wypożyczono: {{ book.borrowed_at }}</p>
-        <p>Oddać do: {{ book.return_by }}</p>
+        <p><b>Wypożyczono</b> : {{ book.borrowed_at }}</p>
+        <p><b>Masz czas na oddanie do</b> : {{ book.return_by }}</p>
         <form action="{{ url_for('return_book', book_id=book.id) }}" method="POST">
-            <button type="submit">Oddaj</button>
+            <button class="btn btn-dark mb-5" type="submit">Oddaj</button>
         </form>
     </div>
 {% endfor %}
