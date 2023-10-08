@@ -12,6 +12,7 @@ db = SQLAlchemy(app)
 app.config['SECRET_KEY'] = 'admin'
 
 
+# model ksiazki
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
@@ -24,6 +25,7 @@ class Book(db.Model):
         return f'{self.title} - {self.author}'
 
 
+# model uzytkownika
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String, unique=True, nullable=False)
@@ -37,7 +39,7 @@ class User(db.Model):
 
 with app.app_context():
     db.create_all()
-    if Book.query.count() < 250:
+    if Book.query.count() < 100:
         books = fetch_books()
         save_books_to_db(books, Book, db)
 
@@ -49,6 +51,7 @@ def get_current_user():
     return User.query.get(user_id)
 
 
+# strona glowna
 @app.route('/', methods=['GET', 'POST'])
 def home():
     title = 'Strona główna'
@@ -92,6 +95,7 @@ def home():
     return render_template('index.html', context=context)
 
 
+# strona pokazujaca naraz trzy losowe ksiazki z bazy danych
 @app.route('/ksiazki')
 def examples():
     title = 'Książki'
@@ -103,6 +107,7 @@ def examples():
     return render_template('ksiazki.html', context=context)
 
 
+# konto uzytkownika
 @app.route('/konto', methods=['GET', 'POST'])
 def account():
     title = 'Konto'
@@ -110,17 +115,18 @@ def account():
     user_id = session.get('user_id')
     user_name = User.query.get(user_id)
     user_books = Book.query.filter_by(user_id=user_id).all()
-    tokens = User.query.get(session.get('user_id'))
+    user_tokens = User.query.get(session.get('user_id'))
     context = {
         'title': title,
         'all_books': all_books,
         'user_books': user_books,
         'user': user_name,
-        'tokens': tokens
+        'tokens': user_tokens
     }
     return render_template('konto.html', context=context)
 
 
+# funkcja, dzieki ktorej mozna wypozyczyc ksiazki
 @app.route('/borrow/<int:book_id>', methods=['GET', 'POST'])
 def borrow(book_id):
     user_id = session.get('user_id')
@@ -141,15 +147,17 @@ def borrow(book_id):
             return redirect(url_for('account'))
 
 
+# funkcja zwracajaca wypozyczone ksiazki
 @app.route('/return/<int:book_id>', methods=['POST'])
 def return_book(book_id):
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
     book = Book.query.get(book_id)
+    user = User.query.get(session.get('user_id'))
     if book and book.user_id == user_id:
         if datetime.now() > book.return_by:
-            user_id.tokens -= 5
+            user.tokens -= 5
             flash('Spóźniłeś się z oddaniem książki, dlatego z Twojego konta zostało pobranych 5 żetonów')
         book.user_id = None
         book.borrowed_at = None
@@ -158,6 +166,7 @@ def return_book(book_id):
     return redirect(url_for('account'))
 
 
+# funkcja odpowiadajaca za wylogowanie
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
@@ -165,3 +174,15 @@ def logout():
     return redirect(url_for('home'))
 
 
+# funkcja, ktora dodaje zetony do konta
+@app.route('/recharge', methods=['POST'])
+def recharge():
+    user = User.query.get(session.get('user_id'))
+    amount = int(request.form.get('amount'))
+    if amount <= 0:
+        flash('Nieprawidłowa wartość')
+        return redirect(url_for('account'))
+    else:
+        user.tokens += amount
+        db.session.commit()
+        return redirect(url_for('account'))

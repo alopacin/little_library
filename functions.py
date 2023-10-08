@@ -1,11 +1,13 @@
 import requests
 
 
+# funkcja, ktora pobiera z pliku txt i wyswietla cytaty
 def load_quotes(f):
     with open(f, 'r', encoding='utf-8') as file:
         return [line.strip() for line in file if line.strip()]
 
 
+# funkcja pobierajaca z api ksiazki
 def fetch_books(limit=100):
     base_url = "https://gutendex.com/books"
     params = {
@@ -29,6 +31,7 @@ def fetch_books(limit=100):
         return []
 
 
+# funckja ktora zapisuje do bazy danych pobrane z api ksiazki
 def save_books_to_db(books, book_model, db):
     for book in books:
         book = book_model(title=book['title'], author=book['author'])
