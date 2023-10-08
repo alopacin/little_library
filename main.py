@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functions import load_quotes, fetch_books, save_books_to_db
 import random
+from datetime import timedelta, datetime
 from sqlalchemy.sql.expression import func
 
 app = Flask(__name__)
@@ -16,6 +17,8 @@ class Book(db.Model):
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    borrowed_at = db.Column(db.DateTime, nullable=True)
+    return_by = db.Column(db.DateTime, nullable=True)
 
     def __str__(self):
         return f'{self.title} - {self.author}'
@@ -111,16 +114,33 @@ def account():
 
 
 @app.route('/borrow/<int:book_id>', methods=['GET', 'POST'])
-def borrow_book(book_id):
-    current_user = get_current_user()
+def borrow(book_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+
     book = Book.query.get(book_id)
     if book and not book.user_id:
-        current_user = get_current_user()
-        book.user_id = current_user.id
+        book.user_id = user_id
+        book.borrowed_at = datetime.now()
+        book.return_by = datetime.now() + timedelta(hours=1)
         db.session.commit()
-        return redirect(url_for('account'))
-    else:
-        return "Książka jest już wypożyczona", 400
+    return redirect(url_for('account'))
+
+
+@app.route('/return/<int:book_id>', methods=['POST'])
+def return_book(book_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    book = Book.query.get(book_id)
+    if book and book.user_id == user_id:
+        book.user_id = None
+        book.borrowed_at = None
+        book.return_by = None
+        db.session.commit()
+    return redirect(url_for('account'))
 
 
 @app.route('/logout')

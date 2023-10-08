@@ -6,7 +6,7 @@ def load_quotes(f):
         return [line.strip() for line in file if line.strip()]
 
 
-def fetch_books(limit=1000):
+def fetch_books(limit=250):
     base_url = "https://gutendex.com/books"
     params = {
         'random': 'true',
@@ -18,7 +18,10 @@ def fetch_books(limit=1000):
         processed_books = []
         for book in books:
             title = book.get('title')
-            author = book['authors'][0]['name']
+            if 'authors' in book and book['authors'] and 'name' in book['authors'][0]:
+                author = book['authors'][0]['name']
+            else:
+                author = "Nieznany autor"
             processed_books.append({'title': title, 'author': author})
         return processed_books
     else:
