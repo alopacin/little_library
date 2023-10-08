@@ -29,6 +29,7 @@ class User(db.Model):
     login = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     books_borrowed = db.relationship('Book', backref='borrower', lazy=True)
+    tokens = db.Column(db.Integer, default=3)
 
     def __repr__(self):
         return self.login
@@ -109,11 +110,13 @@ def account():
     user_id = session.get('user_id')
     user_name = User.query.get(user_id)
     user_books = Book.query.filter_by(user_id=user_id).all()
+    tokens = User.query.get(session.get('user_id'))
     context = {
         'title': title,
         'all_books': all_books,
         'user_books': user_books,
-        'user': user_name
+        'user': user_name,
+        'tokens': tokens
     }
     return render_template('konto.html', context=context)
 
@@ -123,14 +126,19 @@ def borrow(book_id):
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
-
     book = Book.query.get(book_id)
     if book and not book.user_id:
-        book.user_id = user_id
-        book.borrowed_at = datetime.now()
-        book.return_by =  datetime.now() + timedelta(hours=1)
-        db.session.commit()
-    return redirect(url_for('account'))
+        user = User.query.get(session.get('user_id'))
+        if user.tokens > 0:
+            user.tokens -= 1
+            book.user_id = user_id
+            book.borrowed_at = datetime.now()
+            book.return_by = datetime.now() + timedelta(hours=1)
+            db.session.commit()
+            return redirect(url_for('account'))
+        else:
+            flash('Nie masz wystarczającej liczby żetonów')
+            return redirect(url_for('account'))
 
 
 @app.route('/return/<int:book_id>', methods=['POST'])
@@ -138,9 +146,11 @@ def return_book(book_id):
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
-
     book = Book.query.get(book_id)
     if book and book.user_id == user_id:
+        if datetime.now() > book.return_by:
+            user_id.tokens -= 5
+            flash('Spóźniłeś się z oddaniem książki, dlatego z Twojego konta zostało pobranych 5 żetonów')
         book.user_id = None
         book.borrowed_at = None
         book.return_by = None
