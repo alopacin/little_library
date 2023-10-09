@@ -44,7 +44,7 @@ class User(db.Model, UserMixin):
     books_borrowed = db.relationship("Book", backref="borrower", lazy=True)
     tokens = db.Column(db.Integer, default=3)
 
-    def __repr__(self):
+    def __str__(self):
         return self.login
 
 
@@ -93,10 +93,7 @@ def home():
         else:
             flash("Błędny login lub hasło", "danger")
 
-    context = {
-        "title": title,
-        "quote": quote,
-    }
+    context = {"title": title, "quote": quote, "user": current_user}
     return render_template("index.html", context=context)
 
 
@@ -183,5 +180,6 @@ def recharge():
         return redirect(url_for("account"))
     else:
         current_user.tokens += amount
+        flash("Dodano żetony do konta", "success")
         db.session.commit()
         return redirect(url_for("account"))

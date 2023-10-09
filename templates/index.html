@@ -6,14 +6,27 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
 <body>
-<img src="{{ url_for('static', filename='1.jpg') }}" class="rounded float-start img-fluid" width="180px" height="200px" alt="hand_with_books.Image by Rochak Shukla on Freepik">
-
-    <div class="container text-center mb-3 mt-4 p-3">
-        <h1>Strona główna</h1>
+<div class="text-center mb-1 mt-1 p-3">
+  <div class="row">
+      <div class="col">
+         <img src="{{ url_for('static', filename='1.jpg') }}"
+              class="float-start img-fluid" width="180px" height="180px" alt="hand_with_books.Image by Rochak Shukla on Freepik">
+      </div>
+    <div class="col-8 justify-content-center">
+      <h1>Strona główna</h1>
         <a href="/" class="btn btn-secondary" >Strona główna</a>
         <a href="/konto" class="btn btn-secondary">Konto</a>
         <a href="/ksiazki" class="btn btn-secondary" >Przykładowe książki</a>
     </div>
+    <div class="col p-3 ">
+        {% if current_user.is_authenticated %}
+            <h4> Zalogowany jako: {{ context.user }} </h4>
+                <a href="/logout" class="btn btn-danger btn-sm">Wyloguj</a>
+        {% else %}
+        {% endif %}
+    </div>
+  </div>
+</div>
 
 <h5 class="container fs-5 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">Witaj w wypożyczalni książek szybkiego czytania. Posiadamy wiele tytułów, którymi możesz być zainteresowany.
             Nasza kolekcja obejmuje zarówno klasyki literatury światowej, jak i nowości wydawnicze, które zdobyły uznanie czytelników na całym świecie.
@@ -27,45 +40,34 @@ Możesz doładować swoje konto. Miłego czytania! </h5>
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-            <div class="container text-center alert alert-{{ category }}">
+            <div class="container mt-4 mb-4 text-center alert alert-{{ category }}">
                 <h5>{{ message }}</h5>
             </div>
         {% endfor %}
     {% endif %}
 {% endwith %}
 
-    <div class="container text-center mx-auto mt-5">
-         {% if context.message1 %}
-                <p style="color: red" class="display-6"> {{ context.message1 }} </p>
-                {% endif %}
-            {% if context.message2 %}
-                <p style="color: red" class="display-6"> {{ context.message2 }} </p>
-                {% endif %}
-        {% if context.message3 %}
-                <p style="color: green" class="display-6"> {{ context.message3 }} </p>
-                {% endif %}
-    </div>
-
+{% if not current_user.is_authenticated %}
     <div class="container-fluid text-center mx-auto row gx-4 mb-4">
-        <div class="container col-5 mt-4 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
+        <div class="container col-5 mt-3 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
             <h4 class="container row-2">Załóż konto</h4>
             <form action="/" method="POST">
                 <input class="w-100" type="text" placeholder="Podaj swój login" name="nowe_konto_login" required>
                 <input class="w-100" type="password" placeholder="Podaj hasło" name="nowe_konto_haslo" required>
-                <button class="btn btn-secondary" type="submit">Zarejestruj</button>
+                <button class="btn btn-secondary mt-2" type="submit">Zarejestruj</button>
             </form>
         </div>
 
-        <div class="container col-5 mt-4 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
+        <div class="container col-5 mt-3 p-3 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
             <h4 class="container row-2">Zaloguj się</h4>
             <form action="/" method="POST">
                 <input class="w-100" type="text" placeholder="Login" name="logowanie_login" required>
                 <input class="w-100" type="password" placeholder="Hasło" name="logowanie_haslo" required>
-                <button class="btn btn-secondary" type="submit">Zaloguj</button>
+                <button class="btn btn-secondary mt-2" type="submit">Zaloguj</button>
             </form>
         </div>
-
-        <div class="mt-5 fs-3 fst-italic ">
+ {% endif %}
+        <div class="container mt-5 fs-3 fst-italic ">
             {{ context.quote }}
         </div>
 

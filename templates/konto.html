@@ -19,18 +19,18 @@
         </form>
         </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
+   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-                <div class=" container alert alert-danger">{{ message }}</div>
+            <div class="container mt-2 mb-2 text-center alert alert-{{ category }}">
+                <h5>{{ message }}</h5>
             </div>
         {% endfor %}
     {% endif %}
 {% endwith %}
     </div>
 
-<h3 class="container mb-4 mt-3 p-1 ">Witaj na swoim koncie {{ context.user }} ! Posiadasz : {{ context.user.tokens }} żetonów.<br> Masz wypożyczone następujące pozycje :</h3>
+<h4 class="container mb-4 mt-3 p-1 ">Witaj na swoim koncie {{ context.user }} ! Twoja ilość żetonów to : <strong>{{ context.user.tokens }}</strong><br> Masz wypożyczone następujące pozycje :</h4>
 {% for book in context.user_books %}
     <div class="container p-1">
         <h4>{{ book.title }}</h4>
