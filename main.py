@@ -55,9 +55,6 @@ def get_current_user():
 @app.route('/', methods=['GET', 'POST'])
 def home():
     title = 'Strona główna'
-    message1 = None
-    message2 = None
-    message3 = None
     quotes = load_quotes('quotes.txt')
     quote = random.choice(quotes)
 
@@ -69,13 +66,13 @@ def home():
     if new_user and new_user_password:
         exist_user = db.session.query(User).filter_by(login=new_user).first()
         if exist_user:
-            message1 = 'Taki login jest już zajęty'
+            flash('Taki login jest już zajęty', 'danger')
         else:
             hash_pass = generate_password_hash(new_user_password, method='pbkdf2:sha256')
             user = User(login=new_user, password=hash_pass)
             db.session.add(user)
             db.session.commit()
-            message3 = 'Konto zostało założone, możesz się zalogować'
+            flash('Konto zostało założone, możesz się zalogować', 'success')
 
     if check_user_name and check_user_password:
         user = db.session.query(User).filter_by(login=check_user_name).first()
@@ -83,15 +80,12 @@ def home():
             session['user_id'] = user.id
             return redirect(url_for('account'))
         else:
-            message2 = 'Błędny login lub hasło'
+            flash('Błędny login lub hasło', 'danger')
 
     context = {
         'title': title,
-        'message1': message1,
-        'message2': message2,
-        'message3': message3,
         'quote': quote,
-                   }
+               }
     return render_template('index.html', context=context)
 
 
@@ -170,7 +164,7 @@ def return_book(book_id):
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    flash('Poprawnie wylogowano')
+    flash('Poprawnie wylogowano', 'success')
     return redirect(url_for('home'))
 
 

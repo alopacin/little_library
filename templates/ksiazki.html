@@ -10,14 +10,15 @@
         <a href="/" class="btn btn-secondary" >Powrót na stronę główną</a>
     <img src="{{ url_for('static', filename='2.jpg') }}" class="rounded float-end" width="275px" height="275px" alt="">
     </div>
-<div class="container mt-3">
+
+<div class="container mt-3 p-2">
     {% for book in context.show_books %}
     <h6 class="container mt-4 fs-4 text-body-secondary">{{ book }}</h6>
     {% endfor %}
     <form action="/ksiazki">
-        <button class="text-center btn btn-secondary mb-2 mt-2" type="submit">Zobacz kolejne propozycje</button>
-            <h4 class="container text-center col-5 mt-3 p-1 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">Zarejestruj się i wypożyczaj!</h4>
-
+        <button class="text-center btn btn-secondary mb-2 mt-2 p-2" type="submit">Zobacz kolejne propozycje</button>
+            <h4 class="container text-center col-5 mt-3 p-1 --bs-dark-text-emphasis bg-dark-subtle border border-primary-subtle rounded-3">
+                Zarejestruj się i wypożyczaj!</h4>
     </form>
 </div>
 </body>
