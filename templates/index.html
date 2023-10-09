@@ -11,6 +11,7 @@
     <div class="container text-center mb-3 mt-4 p-3">
         <h1>Strona główna</h1>
         <a href="/" class="btn btn-secondary" >Strona główna</a>
+        <a href="/konto" class="btn btn-secondary">Konto</a>
         <a href="/ksiazki" class="btn btn-secondary" >Przykładowe książki</a>
     </div>
 
@@ -26,8 +27,8 @@ Możesz doładować swoje konto. Miłego czytania! </h5>
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-            <div class="container alert alert-{{ category }}">
-                {{ message }}
+            <div class="container text-center alert alert-{{ category }}">
+                <h5>{{ message }}</h5>
             </div>
         {% endfor %}
     {% endif %}

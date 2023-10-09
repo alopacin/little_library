@@ -5,11 +5,22 @@ from functions import load_quotes, fetch_books, save_books_to_db
 import random
 from datetime import timedelta, datetime
 from sqlalchemy.sql.expression import func
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_required,
+    current_user,
+    login_user,
+    logout_user,
+)
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
-app.config['SECRET_KEY'] = 'admin'
+app.config["SECRET_KEY"] = "admin"
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "home"
 
 
 # model ksiazki
@@ -17,20 +28,20 @@ class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     borrowed_at = db.Column(db.DateTime, nullable=True)
     return_by = db.Column(db.DateTime, nullable=True)
 
     def __str__(self):
-        return f'{self.title} - {self.author}'
+        return f"{self.title} - {self.author}"
 
 
 # model uzytkownika
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    books_borrowed = db.relationship('Book', backref='borrower', lazy=True)
+    books_borrowed = db.relationship("Book", backref="borrower", lazy=True)
     tokens = db.Column(db.Integer, default=3)
 
     def __repr__(self):
@@ -44,139 +55,133 @@ with app.app_context():
         save_books_to_db(books, Book, db)
 
 
-def get_current_user():
-    user_id = session.get('user_id')
-    if user_id is None:
-        return None
+@login_manager.user_loader
+def load_user(user_id):
     return User.query.get(user_id)
 
 
 # strona glowna
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def home():
-    title = 'Strona główna'
-    quotes = load_quotes('quotes.txt')
+    title = "Strona główna"
+    quotes = load_quotes("quotes.txt")
     quote = random.choice(quotes)
 
-    new_user = request.form.get('nowe_konto_login')
-    new_user_password = request.form.get('nowe_konto_haslo')
-    check_user_name = request.form.get('logowanie_login')
-    check_user_password = request.form.get('logowanie_haslo')
+    new_user = request.form.get("nowe_konto_login")
+    new_user_password = request.form.get("nowe_konto_haslo")
+    check_user_name = request.form.get("logowanie_login")
+    check_user_password = request.form.get("logowanie_haslo")
 
     if new_user and new_user_password:
         exist_user = db.session.query(User).filter_by(login=new_user).first()
         if exist_user:
-            flash('Taki login jest już zajęty', 'danger')
+            flash("Taki login jest już zajęty", "danger")
         else:
-            hash_pass = generate_password_hash(new_user_password, method='pbkdf2:sha256')
+            hash_pass = generate_password_hash(
+                new_user_password, method="pbkdf2:sha256"
+            )
             user = User(login=new_user, password=hash_pass)
             db.session.add(user)
             db.session.commit()
-            flash('Konto zostało założone, możesz się zalogować', 'success')
+            flash("Konto zostało założone, możesz się zalogować", "success")
 
     if check_user_name and check_user_password:
         user = db.session.query(User).filter_by(login=check_user_name).first()
         if user and check_password_hash(user.password, check_user_password):
-            session['user_id'] = user.id
-            return redirect(url_for('account'))
+            login_user(user)
+            return redirect(url_for("account"))
         else:
-            flash('Błędny login lub hasło', 'danger')
+            flash("Błędny login lub hasło", "danger")
 
     context = {
-        'title': title,
-        'quote': quote,
-               }
-    return render_template('index.html', context=context)
+        "title": title,
+        "quote": quote,
+    }
+    return render_template("index.html", context=context)
 
 
 # strona pokazujaca naraz trzy losowe ksiazki z bazy danych
-@app.route('/ksiazki')
+@app.route("/ksiazki")
 def examples():
-    title = 'Książki'
+    title = "Książki"
     show_books = Book.query.order_by(func.random()).limit(3).all()
     context = {
-        'title': title,
-        'show_books': show_books,
+        "title": title,
+        "show_books": show_books,
     }
-    return render_template('ksiazki.html', context=context)
+    return render_template("ksiazki.html", context=context)
 
 
 # konto uzytkownika
-@app.route('/konto', methods=['GET', 'POST'])
+@app.route("/konto", methods=["GET", "POST"])
+@login_required
 def account():
-    title = 'Konto'
+    title = "Konto"
     all_books = Book.query.filter_by(user_id=None).all()
-    user_id = session.get('user_id')
-    user_name = User.query.get(user_id)
-    user_books = Book.query.filter_by(user_id=user_id).all()
-    user_tokens = User.query.get(session.get('user_id'))
+    user_books = Book.query.filter_by(user_id=current_user.id).all()
+    user_tokens = User.query.get(session.get("user_id"))
     context = {
-        'title': title,
-        'all_books': all_books,
-        'user_books': user_books,
-        'user': user_name,
-        'tokens': user_tokens
+        "title": title,
+        "all_books": all_books,
+        "user_books": user_books,
+        "user": current_user,
+        "tokens": user_tokens,
     }
-    return render_template('konto.html', context=context)
+    return render_template("konto.html", context=context)
 
 
 # funkcja, dzieki ktorej mozna wypozyczyc ksiazki
-@app.route('/borrow/<int:book_id>', methods=['GET', 'POST'])
+@app.route("/borrow/<int:book_id>", methods=["GET", "POST"])
+@login_required
 def borrow(book_id):
-    user_id = session.get('user_id')
-    if not user_id:
-        return redirect(url_for('login'))
     book = Book.query.get(book_id)
     if book and not book.user_id:
-        user = User.query.get(session.get('user_id'))
-        if user.tokens > 0:
-            user.tokens -= 1
-            book.user_id = user_id
+        if current_user.tokens > 0:
+            current_user.tokens -= 1
+            book.user_id = current_user.id
             book.borrowed_at = datetime.now()
             book.return_by = datetime.now() + timedelta(hours=1)
             db.session.commit()
-            return redirect(url_for('account'))
+            return redirect(url_for("account"))
         else:
-            flash('Nie masz wystarczającej liczby żetonów')
-            return redirect(url_for('account'))
+            flash("Nie masz wystarczającej liczby żetonów")
+            return redirect(url_for("account"))
 
 
 # funkcja zwracajaca wypozyczone ksiazki
-@app.route('/return/<int:book_id>', methods=['POST'])
+@app.route("/return/<int:book_id>", methods=["GET", "POST"])
+@login_required
 def return_book(book_id):
-    user_id = session.get('user_id')
-    if not user_id:
-        return redirect(url_for('login'))
     book = Book.query.get(book_id)
-    user = User.query.get(session.get('user_id'))
-    if book and book.user_id == user_id:
+    if book and book.user_id == current_user.id:
         if datetime.now() > book.return_by:
-            user.tokens -= 5
-            flash('Spóźniłeś się z oddaniem książki, dlatego z Twojego konta zostało pobranych 5 żetonów')
+            current_user.tokens -= 5
+            flash(
+                "Spóźniłeś się z oddaniem książki, dlatego z Twojego konta zostało pobranych 5 żetonów"
+            )
         book.user_id = None
         book.borrowed_at = None
         book.return_by = None
         db.session.commit()
-    return redirect(url_for('account'))
+    return redirect(url_for("account"))
 
 
 # funkcja odpowiadajaca za wylogowanie
-@app.route('/logout')
+@app.route("/logout")
 def logout():
-    session.pop('user_id', None)
-    flash('Poprawnie wylogowano', 'success')
-    return redirect(url_for('home'))
+    logout_user()
+    flash("Poprawnie wylogowano", "success")
+    return redirect(url_for("home"))
 
 
 # funkcja, ktora dodaje zetony do konta
-@app.route('/recharge', methods=['POST'])
+@app.route("/recharge", methods=["GET", "POST"])
 def recharge():
-    user = User.query.get(session.get('user_id'))
-    amount = int(request.form.get('amount'))
+    amount = int(request.form.get("amount"))
     if amount <= 0:
-        flash('Nieprawidłowa wartość')
-        return redirect(url_for('account'))
+        flash("Nieprawidłowa wartość")
+        return redirect(url_for("account"))
     else:
-        user.tokens += amount
+        current_user.tokens += amount
         db.session.commit()
-        return redirect(url_for('account'))
+        return redirect(url_for("account"))

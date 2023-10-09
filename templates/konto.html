@@ -30,7 +30,7 @@
 {% endwith %}
     </div>
 
-<h3 class="container mb-4 mt-3 p-1 ">Witaj na swoim koncie {{ context.user }} ! Posiadasz {{ context.user.tokens }} żetony.<br> Masz wypożyczone następujące pozycje :</h3>
+<h3 class="container mb-4 mt-3 p-1 ">Witaj na swoim koncie {{ context.user }} ! Posiadasz : {{ context.user.tokens }} żetonów.<br> Masz wypożyczone następujące pozycje :</h3>
 {% for book in context.user_books %}
     <div class="container p-1">
         <h4>{{ book.title }}</h4>
